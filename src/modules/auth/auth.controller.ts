@@ -26,24 +26,25 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-
   @Post('logout')
   @Roles('admin', 'superadmin', 'assistant')
   @UseGuards(JwtAuthGuard, RolesGuard)
   async logout(@Req() req) {
-    console.log(req.user);
     return this.authService.logout(req.user.userId);
   }
 
-
   @Post('recovery')
   async passwordRecovery(@Body() body: { email: string }) {
-    
     return this.authService.passwordRecovery(body.email);
   }
 
   @Post('validate-otp')
-  async validateOtp(@Body() body: { email: string, otp: string }) {
+  async validateOtp(@Body() body: { email: string; otp: string }) {
     return this.authService.validateOtp(body.email, body.otp);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() body: { token: string; newPassword: string }) {
+    return this.authService.resetPassword(body.token, body.newPassword);
   }
 }

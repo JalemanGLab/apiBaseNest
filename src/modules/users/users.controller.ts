@@ -7,6 +7,8 @@ import {
   Post,
   UseGuards,
   UsePipes,
+  ParseIntPipe,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserRequest } from 'src/types/user.type';
@@ -16,6 +18,7 @@ import { ValidateUserPipe } from 'src/common/pipe/users.pipe';
 import { Roles } from 'src/common/decorator/roles.decorator';
 
 @Controller('users')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -46,5 +49,16 @@ export class UsersController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   updateUserStatus(@Param('id') id: number) {
     return this.usersService.updateUserStatus(id);
+  }
+
+  @Patch(':identification/role')
+  @Roles('superadmin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async updateRole(
+    @Param('identification', ParseIntPipe) identification: number,
+    @Body('role') role: string,
+    @Req() req,
+  ) {
+    return this.usersService.updateUserRole(identification, role, req.user);
   }
 }
