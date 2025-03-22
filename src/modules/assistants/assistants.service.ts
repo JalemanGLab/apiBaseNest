@@ -33,17 +33,14 @@ export class AssistantsService {
 		const response = {
 			supabaseUrl: process.env.SUPABASE_URL,
 			supabaseKey: process.env.SUPABASE_ANON_KEY,
-			supabaseService: this.supabaseService,
-			emailService: this.emailService,
 			status: status,
-			message: 'Asistentes encontrados correctamente',
 			data: data,
 			count: count,
 			statusText: statusText,
 			error: error
 		};
 		console.log(response);
-		return response;
+		return data || [];
 	}
 
 	async findOne(identification: number): Promise<Assistant> {
