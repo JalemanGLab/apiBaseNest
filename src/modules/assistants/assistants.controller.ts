@@ -15,9 +15,6 @@ import { ValidateAssistantPipe } from 'src/common/pipe/assistants.pipe';
 import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 import { Roles } from 'src/common/decorator/roles.decorator';
 import { RolesGuard } from 'src/common/guard/roles.guard';
-
-@Roles('admin', 'superadmin')
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('assistants')
 export class AssistantsController {
   constructor(private readonly assistantsService: AssistantsService) {}
@@ -28,6 +25,8 @@ export class AssistantsController {
     return this.assistantsService.create(createRequest);
   }
 
+  @Roles('admin', 'superadmin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   findAll() {
     return this.assistantsService.findAll();
