@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { SupabaseService } from 'src/config/supabase/supabase.service';
 import { LoginDto } from 'src/types/auth.type';
@@ -97,6 +98,7 @@ export class AuthService {
     // Generar código OTP de 6 dígitos
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
+
     // Establecer fecha de expiración (5 minutos desde ahora)
     const otpExpired = new Date();
     otpExpired.setMinutes(otpExpired.getMinutes() + 5);
@@ -125,10 +127,10 @@ export class AuthService {
     };
   }
 
-  async validateOtp(email: string, otp: string): Promise<{ message: string }> {
+  async validateOtp(email: string, otp: string) {
     const { data: user, error } = await this.supabaseService.client
       .from('users_profile')
-      .select('otp, otp_expired')
+      .select('identification, email, role, otp, otp_expired')
       .eq('email', email)
       .single();
 
@@ -149,7 +151,7 @@ export class AuthService {
     // Verificar si el código coincide
     if (user.otp !== otp) {
       throw new BadRequestException(
-        'El código ha expirado o no es válido, por favor ingrese un código valido',
+        'El código no es válido, por favor ingrese un código válido',
       );
     }
 
@@ -166,8 +168,121 @@ export class AuthService {
       throw new BadRequestException('Error al validar el código');
     }
 
+    // Generar token especial para cambio de contraseña (expira en 15 minutos)
+    const resetToken = jwt.sign(
+      {
+        id: user.identification,
+        email: user.email,
+        role: user.role,
+        type: 'password_reset',
+      },
+      process.env.JWT_SECRET as string,
+      { expiresIn: '2m' },
+    );
+
     return {
-      message: 'Código válidado correctamente',
+      message: 'Código validado correctamente',
+      resetToken,
     };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    try {
+      // Validar que el token exista
+      if (!token) {
+        throw new UnauthorizedException({
+          status: false,
+          message: 'Token no proporcionado',
+          error: 'TOKEN_MISSING',
+          statusCode: 401
+        });
+      }
+
+      let decoded;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
+      } catch (error) {
+        if (error instanceof jwt.TokenExpiredError) {
+          throw new UnauthorizedException({
+            status: false,
+            message: 'El token ha expirado, solicite uno nuevo',
+            error: 'TOKEN_EXPIRED',
+            statusCode: 401
+          });
+        }
+        if (error instanceof jwt.JsonWebTokenError) {
+          if (error.message === 'jwt malformed') {
+            throw new UnauthorizedException({
+              status: false,
+              message: 'Formato de token inválido',
+              error: 'TOKEN_MALFORMED',
+              statusCode: 401
+            });
+          }
+          if (error.message === 'invalid signature') {
+            throw new UnauthorizedException({
+              status: false,
+              message: 'Token no válido',
+              error: 'INVALID_SIGNATURE',
+              statusCode: 401
+            });
+          }
+        }
+        throw new UnauthorizedException({
+          status: false,
+          message: 'Token inválido',
+          error: 'INVALID_TOKEN',
+          statusCode: 401
+        });
+      }
+
+      // Verificar que sea un token de tipo reset
+      if (decoded.type !== 'password_reset') {
+        throw new UnauthorizedException({
+          status: false,
+          message: 'Token no válido para cambio de contraseña',
+          error: 'INVALID_TOKEN_TYPE',
+          statusCode: 401
+        });
+      }
+
+      // Hash y actualización de contraseña
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      const { error } = await this.supabaseService.client
+        .from('users_profile')
+        .update({ 
+          password: hashedPassword,
+          token: null
+        })
+        .eq('identification', decoded.id);
+
+      if (error) {
+        throw new BadRequestException({
+          status: false,
+          message: 'Error al actualizar la contraseña',
+          error: 'UPDATE_ERROR',
+          statusCode: 400
+        });
+      }
+
+      return {
+        status: true,
+        message: 'Contraseña actualizada correctamente',
+        statusCode: 200
+      };
+    } catch (error) {
+      // Si ya es un error formateado, lo relanzamos
+      if (error.response) {
+        throw error;
+      }
+      // Para otros errores inesperados
+      throw new InternalServerErrorException({
+        status: false,
+        message: 'Error interno del servidor',
+        error: 'INTERNAL_SERVER_ERROR',
+        statusCode: 500
+      });
+    }
   }
 }
