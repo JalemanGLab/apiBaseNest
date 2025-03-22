@@ -43,7 +43,7 @@ export class AssistantsService {
 			error: error
 		};
 		console.log(response);
-		return response;
+		return data || [];
 	}
 
 	async findOne(identification: number): Promise<Assistant> {
