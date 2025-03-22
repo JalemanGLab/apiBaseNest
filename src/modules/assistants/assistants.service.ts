@@ -5,7 +5,7 @@ import {
 	InternalServerErrorException,
 } from '@nestjs/common';
 import { SupabaseService } from 'src/config/supabase/supabase.service';
-
+import { EmailService } from 'src/config/email/email.service';
 import { 
 	Assistant, 
 	CreateAssistantRequest, 
@@ -17,7 +17,8 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class AssistantsService {
 	constructor(
-		private supabaseService: SupabaseService
+		private supabaseService: SupabaseService,
+		private emailService: EmailService
 	) { }
 
 	async findAll(): Promise<Assistant[]> {
@@ -76,7 +77,7 @@ export class AssistantsService {
 					last_name: assistant.last_name,
 					phone: assistant.phone,
 					email: assistant.email,
-					rol: 'assistant',
+					role: 'assistant',
 					password: hashedPassword,
 				}
 				const { error: userError } = await this.supabaseService.client
@@ -93,8 +94,16 @@ export class AssistantsService {
 				}
 			}
 
-			//Enviamos al correo  el tiket de entrada y el bono
-		//const emailResponse = await this.emailService.sendTicketEmail(transaction);
+
+			// enviar correo 
+			try {
+				const emailResponse = await this.emailService.sendEmail();
+				console.log(emailResponse);
+			} catch (error) {
+				console.log(error);
+			}
+
+
 			
 
 
