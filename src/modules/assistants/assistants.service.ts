@@ -57,6 +57,48 @@ export class AssistantsService {
     return data;
   }
 
+  async registerEntry(identification: number) {
+    const { data: assistant, error: findError } =
+      await this.supabaseService.client
+        .from('assistant')
+        .select('entry')
+        .eq('identification', identification)
+        .single();
+
+    if (!assistant) {
+      throw new NotFoundException(
+        `Asistente con identificación ${identification} no encontrado`,
+      );
+    }
+
+    if (findError) throw new ConflictException(findError);
+
+    if (assistant.entry) {
+      throw new ConflictException('El asistente ya registró su entrada');
+    }
+
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString('en-US', { hour12: false });
+
+    const { data, error } = await this.supabaseService.client
+      .from('assistant')
+      .update({
+        entry: true,
+        entry_datetime: formattedTime,
+      })
+      .eq('identification', identification)
+      .select()
+      .single();
+
+    if (error) throw new ConflictException(error);
+
+    return {
+      status: true,
+      message: 'Entrada registrada correctamente',
+      data: [data],
+    };
+  }
+
   async create(
     createRequest: CreateAssistantRequest,
   ): Promise<CreateAssistantResponse> {
