@@ -2,11 +2,11 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Body,
   Param,
   UsePipes,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { AssistantsService } from './assistants.service';
 
@@ -31,6 +31,13 @@ export class AssistantsController {
   @Get()
   findAll() {
     return this.assistantsService.findAll();
+  }
+
+  @Patch('register-entry/:identification')
+  @Roles('admin', 'superadmin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  registerEntry(@Param('identification') identification: number) {
+    return this.assistantsService.registerEntry(identification);
   }
 
   // @Get()
