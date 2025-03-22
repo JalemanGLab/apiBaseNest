@@ -7,6 +7,7 @@ import { EmailModule } from './config/email/email.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AssistantsModule } from './modules/assistants/assistants.module';
 import { DistributorsModule } from './modules/distributors/distributors.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { DistributorsModule } from './modules/distributors/distributors.module';
     EmailModule,
     AssistantsModule,
     DistributorsModule,
-    AuthModule
+    AuthModule,
+    UsersModule
   ],
   controllers: [AppController],
   providers: [AppService],
