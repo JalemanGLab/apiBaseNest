@@ -130,25 +130,32 @@ export class UsersService {
 
   async updateUserRole(
     identification: number,
-    role: string,
+    updateRole: string,
+    user: User,
   ): Promise<CreateUserResponse> {
-    const user = await this.findOne(identification);
+    const userToUpdate = await this.findOne(identification);
 
-    if (!user) {
+    if (!userToUpdate) {
       throw new NotFoundException(
         `Usuario con identificación ${identification} no encontrado`,
       );
     }
 
-    if (user.role === 'superadmin') {
+    if (userToUpdate.role === 'superadmin') {
       throw new ConflictException(
         'No se puede cambiar el rol de un superadmin',
       );
     }
 
+    if (updateRole === 'superadmin') {
+      throw new ConflictException(
+        'No se puede asignar el rol de superadmin',
+      );
+    }
+
     const { data, error } = await this.supabaseService.client
       .from('users_profile')
-      .update({ role: role })
+      .update({ role: updateRole })
       .eq('identification', identification)
       .select(
         'identification, first_name, last_name, phone, email, role, is_active',
@@ -159,7 +166,7 @@ export class UsersService {
 
     return {
       status: true,
-      message: `Rol del usuario ${data.first_name} ${data.last_name} actualizado a ${role} correctamente`,
+      message: `Rol del usuario ${data.first_name} ${data.last_name} actualizado a ${updateRole} correctamente`,
       data: [data],
     };
   }
