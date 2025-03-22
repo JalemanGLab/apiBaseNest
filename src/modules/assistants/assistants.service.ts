@@ -21,14 +21,25 @@ export class AssistantsService {
 		private emailService: EmailService
 	) { }
 
-	async findAll(): Promise<Assistant[]> {
-		const { data, error } = await this.supabaseService.client
+	async findAll() {
+
+
+		const { data, error, count , status, statusText} = await this.supabaseService.client
 			.from('assistant')
 			.select('*')
 			.order('created_at', { ascending: false });
 
 		if (error) throw error;
-		return data || [];
+		const response = {
+			status: status,
+			message: 'Asistentes encontrados correctamente',
+			data: data,
+			count: count,
+			statusText: statusText,
+			error: error
+		};
+		console.log(response);
+		return response;
 	}
 
 	async findOne(identification: number): Promise<Assistant> {
