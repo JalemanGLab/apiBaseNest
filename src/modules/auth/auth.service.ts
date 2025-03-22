@@ -60,6 +60,8 @@ export class AuthService {
           first_name: user.first_name,
           last_name: user.last_name,
           role: user.role,
+          identification: user.identification,
+          phone: user.phone
         },
         token,
       },
