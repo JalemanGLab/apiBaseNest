@@ -9,6 +9,7 @@ import {
   ValidationPipe,
   UseGuards,
   Req,
+  Patch,
 } from '@nestjs/common';
 import { LoginDto } from 'src/types/auth.type';
 import { AuthService } from './auth.service';
@@ -46,5 +47,14 @@ export class AuthController {
   @Post('reset-password')
   async resetPassword(@Body() body: { token: string; newPassword: string }) {
     return this.authService.resetPassword(body.token, body.newPassword);
+  }
+
+  @Patch('change-password')
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @Req() req,
+    @Body() body: { newPassword: string }
+  ) {
+    return this.authService.changePassword(req.user.userId, body.newPassword);
   }
 }
