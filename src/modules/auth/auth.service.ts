@@ -285,4 +285,41 @@ export class AuthService {
       });
     }
   }
+
+  async changePassword(userId: number, newPassword: string) {
+    try {
+      // Hash de la nueva contraseña
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      const { error: updateError } = await this.supabaseService.client
+        .from('users_profile')
+        .update({ password: hashedPassword })
+        .eq('identification', userId);
+
+      if (updateError) {
+        throw new BadRequestException({
+          status: false,
+          message: 'Error al actualizar la contraseña',
+          error: 'UPDATE_ERROR',
+          statusCode: 400
+        });
+      }
+
+      return {
+        status: true,
+        message: 'Contraseña actualizada correctamente',
+        statusCode: 200
+      };
+    } catch (error) {
+      if (error.response) {
+        throw error;
+      }
+      throw new InternalServerErrorException({
+        status: false,
+        message: 'Error interno del servidor',
+        error: 'INTERNAL_SERVER_ERROR',
+        statusCode: 500
+      });
+    }
+  }
 }
