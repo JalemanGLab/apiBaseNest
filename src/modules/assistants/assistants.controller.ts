@@ -20,8 +20,6 @@ export class AssistantsController {
   constructor(private readonly assistantsService: AssistantsService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'superadmin')
   @UsePipes(ValidateAssistantPipe)
   create(@Body() createRequest: CreateAssistantRequest) {
     return this.assistantsService.create(createRequest);
