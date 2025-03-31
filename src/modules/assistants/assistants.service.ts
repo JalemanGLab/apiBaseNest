@@ -129,7 +129,7 @@ export class AssistantsService {
         TipoImplementacion: 1,
         Estado_Url: false,
         Url: null,
-        ValorPagar: 500000,
+        ValorPagar: 1,
         Factura: factura,
         referencia: referencia,
         Descripcion: 'Pago Congreso Magno 3.0',
@@ -141,7 +141,7 @@ export class AssistantsService {
       // Agregamos los datos de pago al asistente
       const assistantWithPayment = {
         ...assistant,
-        payment_status: 'Pendiente',
+        payment_status: 'PENDIENTE',
         payment_ref: referencia,
         transaction_id: transactionResponse.result.idTransaccion,
       };
