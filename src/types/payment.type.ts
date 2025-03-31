@@ -1,29 +1,43 @@
-import { NewAssistant } from "./assistants.type";
-
-export interface Card {
-  name: string;
-  number: string;
-  expiration_date: string;
-  cvv: string;
+export interface Login {
+  username: string;
+  password: string;
 }
 
-export interface PSE {
-  bank: string;
-  type_person: 'natural' | 'juridica';
+export interface Pagador {
+  Documento: string;
+  TipoDocumento: number;
+  Nombre_Completo?: string | null;
+  Dv?: string | null;
+  PRIMERNOMBRE: string;
+  SEGUNDONOMBRE: string;
+  PRIMERAPELLIDO: string;
+  SEGUNDOAPELLIDO: string;
+  Telefono: string;
+  Email: string;
+  Direccion: string;
 }
 
-export interface Payment {
-  type: 'PSE';
-  value: number;
-  pse?: PSE;
-  card?: Card;
+export interface PaymentTransactionRequest {
+  IdTramite: number;
+  Pagador: Pagador;
+  FuentePago: number;
+  TipoImplementacion: number;
+  Estado_Url: boolean;
+  Url?: string | null;
+  ValorPagar: number;
+  Factura: number;
+  referencia: string;
+  Descripcion: string;
 }
 
-export interface Transaction {
-  assistant: NewAssistant;
-  payment: Payment;
-  payment_ref: string;
-  payment_status: string;
-  payment_date: string;
-  payment_hour: string;
+export interface PaymentResult {
+  idTransaccion: number;
+  url: string;
+}
+
+export interface PaymentResponse {
+  state: number;
+  isSuccess: boolean;
+  message: string | null;
+  result: PaymentResult;
 }

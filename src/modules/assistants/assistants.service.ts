@@ -11,14 +11,15 @@ import {
   CreateAssistantRequest,
   CreateAssistantResponse,
 } from 'src/types/assistants.type';
-import { Transaction } from 'src/types/payment.type';
+import { PaymentTransactionRequest } from 'src/types/payment.type';
 import * as bcrypt from 'bcrypt';
-
+import { PaymentsService } from '../payments/payments.service';
 @Injectable()
 export class AssistantsService {
   constructor(
     private supabaseService: SupabaseService,
     private emailService: EmailService,
+    private paymentsService: PaymentsService,
   ) {}
 
   async findAll() {
@@ -102,24 +103,53 @@ export class AssistantsService {
   async create(
     createRequest: CreateAssistantRequest,
   ): Promise<CreateAssistantResponse> {
-    const { assistant, payment } = createRequest;
+    const { assistant } = createRequest;
+    const factura = await this.paymentsService.getNextInvoiceNumber();
+    const referencia = await this.paymentsService.generateReference(
+      assistant.identification,
+    );
 
     try {
-      // aqui logica para realizar el pago
-      const transaction: Transaction = {
-        assistant: assistant,
-        payment: payment,
-        payment_ref: '1234567890',
-        payment_status: 'pending',
-        payment_date: '2025-03-17',
-        payment_hour: '10:00',
+      const transaction: PaymentTransactionRequest = {
+        IdTramite: assistant.distributor_id,
+        Pagador: {
+          Documento: assistant.identification.toString(),
+          TipoDocumento: 1,
+          Nombre_Completo: null,
+          Dv: null,
+          PRIMERNOMBRE: assistant.first_name,
+          SEGUNDONOMBRE: '',
+          PRIMERAPELLIDO: assistant.last_name,
+          SEGUNDOAPELLIDO: '',
+          Telefono: assistant.phone,
+          Email: assistant.email,
+          Direccion: assistant.city,
+        },
+        FuentePago: 1,
+        TipoImplementacion: 1,
+        Estado_Url: false,
+        Url: null,
+        ValorPagar: 500000,
+        Factura: factura,
+        referencia: referencia,
+        Descripcion: 'Pago Congreso Magno 3.0',
       };
 
-      //Registramos el asistente
+      const transactionResponse =
+        await this.paymentsService.createTransaction(transaction);
+
+      // Agregamos los datos de pago al asistente
+      const assistantWithPayment = {
+        ...assistant,
+        payment_status: 'Pendiente',
+        payment_ref: referencia,
+        transaction_id: transactionResponse.result.idTransaccion,
+      };
+
       const { data: assistantData, error: assistantError } =
         await this.supabaseService.client
           .from('assistant')
-          .insert([assistant])
+          .insert([assistantWithPayment])
           .select()
           .single();
       if (assistantError) {
@@ -192,6 +222,8 @@ export class AssistantsService {
             city: assistant.city,
           },
         ],
+        url_redirect: transactionResponse.result.url,
+        transaction_id: transactionResponse.result.idTransaccion,
       };
     } catch (error) {
       if (error instanceof ConflictException) {
