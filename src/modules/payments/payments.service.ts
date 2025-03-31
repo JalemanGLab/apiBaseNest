@@ -86,16 +86,61 @@ export class PaymentsService {
         },
       );
 
-      return response.data;
+      const paymentStatus = response.data.result.estado_Descripcion;
+
+      try {
+        const { error } = await this.supabaseService.client
+          .from('assistant')
+          .update({
+            payment_status: paymentStatus,
+            payment_update: new Date()
+              .toISOString()
+              .replace('T', ' ')
+              .split('.')[0],
+          })
+          .eq('transaction_id', transactionId);
+
+        if (error) {
+          return {
+            status: false,
+            message: 'Error al actualizar el estado del pago',
+            error: error.message,
+            data: response.data,
+          };
+        }
+
+        return {
+          status: true,
+          message: 'Estado de pago actualizado correctamente',
+          data: response.data,
+        };
+      } catch (dbError) {
+        return {
+          status: false,
+          message: 'Error en la base de datos',
+          error: dbError.message,
+          data: response.data,
+        };
+      }
     } catch (error) {
       if (error.response?.status === 401) {
         await this.login();
         return this.findTransaction(transactionId);
       }
       if (error.response?.status === 404) {
-        throw new NotFoundException('Transacción no encontrada');
+        return {
+          status: false,
+          message: 'Transacción no encontrada',
+          error: 'NOT_FOUND',
+          statusCode: 404,
+        };
       }
-      throw error;
+      return {
+        status: false,
+        message: 'Error al consultar la transacción',
+        error: error.message,
+        statusCode: error.response?.status || 500,
+      };
     }
   }
 
