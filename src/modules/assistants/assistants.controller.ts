@@ -20,6 +20,8 @@ export class AssistantsController {
   constructor(private readonly assistantsService: AssistantsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'superadmin')
   @UsePipes(ValidateAssistantPipe)
   create(@Body() createRequest: CreateAssistantRequest) {
     return this.assistantsService.create(createRequest);
@@ -38,24 +40,4 @@ export class AssistantsController {
   registerEntry(@Param('identification') identification: number) {
     return this.assistantsService.registerEntry(identification);
   }
-
-  // @Get()
-  // //@UseGuards(JwtAuthGuard, RolesGuard)
-  // //@Roles('admin', 'superadmin')
-  // findAll() {
-  //   return this.assistantsService.findAll();
-  // }
-
-  // @Get(':identification')
-  // findOne(@Param('identification', ParseIntPipe) identification: number) {
-  //   return this.assistantsService.findOne(identification);
-  // }
-
-  // @Put(':identification ')
-  // update(
-  //   @Param('identification', ParseIntPipe) identification: number,
-  //   @Body() updateAssistantDto: Partial<Omit<Assistant, 'identification' | 'created_at'>>,
-  // ) {
-  //   return this.assistantsService.update(identification, updateAssistantDto);
-  // }
 }
