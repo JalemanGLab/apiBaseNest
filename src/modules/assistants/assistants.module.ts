@@ -8,5 +8,6 @@ import { PaymentsModule } from '../payments/payments.module';
   imports: [SupabaseModule, EmailModule, PaymentsModule],
   controllers: [AssistantsController],
   providers: [AssistantsService],
+  exports: [AssistantsService],
 })
 export class AssistantsModule {}
