@@ -1,4 +1,3 @@
-import { Payment } from "src/types/payment.type";
 export interface Assistant {
   identification: number;
   first_name: string;
@@ -7,11 +6,12 @@ export interface Assistant {
   email: string;
   city: string;
   distributor: string;
+  distributor_id: number;
   main_procedure: string;
   product_brand: string;
   weekly_procedure: string;
   contact: boolean;
-  payment: string;
+  payment_status: string;
   payment_update: string;
   payment_ref: string;
   entry: boolean;
@@ -26,6 +26,7 @@ export class NewAssistant {
   email: string;
   city: string;
   distributor: string;
+  distributor_id: number;
   main_procedure: string;
   product_brand: string;
   weekly_procedure: string;
@@ -33,30 +34,22 @@ export class NewAssistant {
 }
 
 export interface AssistantResponse {
-
   identification: number;
   first_name: string;
   last_name: string;
   phone: string;
   email: string;
   city: string;
-};
-
-
-
-
-
-
+}
 
 export interface CreateAssistantResponse {
   status: boolean;
   message: string;
   data?: AssistantResponse[];
+  url_redirect: string;
   error?: any;
 }
 
 export interface CreateAssistantRequest {
   assistant: NewAssistant;
-  payment: Payment;
 }
-
