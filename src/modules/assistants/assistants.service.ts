@@ -223,6 +223,7 @@ export class AssistantsService {
           },
         ],
         url_redirect: transactionResponse.result.url,
+        transaction_id: transactionResponse.result.idTransaccion,
       };
     } catch (error) {
       if (error instanceof ConflictException) {

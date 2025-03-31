@@ -47,6 +47,7 @@ export interface CreateAssistantResponse {
   message: string;
   data?: AssistantResponse[];
   url_redirect: string;
+  transaction_id: number;
   error?: any;
 }
 
