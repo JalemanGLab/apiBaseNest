@@ -20,8 +20,8 @@ export class TasksService {
   // *: cada día del mes
   // *: cada mes
   // *: cada día de la semana
-  @Cron(CronExpression.EVERY_8_HOURS)
-  async handleEvery1Minute() {
+  @Cron(CronExpression.EVERY_HOUR)
+  async handleEvery1Hour() {
     const response = await this.assistantsService.findAll();
 
     if (response.data) {
