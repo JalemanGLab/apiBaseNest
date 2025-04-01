@@ -12,7 +12,7 @@ import { DistributorsModule } from './modules/distributors/distributors.module';
 import { UsersModule } from './modules/users/users.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import * as crypto from 'crypto';
-(global as any).crypto = crypto;
+// (global as any).crypto = crypto;
 @Module({
   imports: [
     ConfigModule.forRoot({
