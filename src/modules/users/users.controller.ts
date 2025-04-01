@@ -18,7 +18,6 @@ import { ValidateUserPipe } from 'src/common/pipe/users.pipe';
 import { Roles } from 'src/common/decorator/roles.decorator';
 
 @Controller('users')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
